@@ -1,0 +1,60 @@
+
+
+%{
+int linenum = 1;
+int comment_depth = 0;
+%}
+
+
+
+%x comment
+%x linecomment
+
+
+%%
+"/*" {comment_depth++; BEGIN(comment);}
+<comment>"/*" {comment_depth++;}
+<comment>"*/" {comment_depth--;
+if(comment_depth==0){BEGIN(INITIAL); }}
+
+
+"//" {BEGIN(linecomment);}
+<linecomment>\n {BEGIN(INITIAL); linenum++;}
+
+
+
+<comment>[^\n]    ;
+<comment>\n {linenum++;}
+<linecomment>[^\n] ;
+
+
+\n {linenum++;}
+"+" {printf("%d_tPLUS\n",linenum);}
+"-" {printf("%d_tMINUS\n",linenum);}
+"*" {printf("%d_tMUL\n",linenum);}
+"^" {printf("%d_tEXP\n",linenum);}
+"(" {printf("%d_tLPR\n",linenum);}
+")" {printf("%d_tRPR\n",linenum);}
+"=" {printf("%d_tASSIGN\n",linenum);}
+"," {printf("%d_tCOMMA\n",linenum);}
+";" {printf("%d_tSEMICOLON\n",linenum);}
+"calculate" {printf("%d_tCALCULATE\n",linenum);}
+"D" {printf("%d_tDERIVATION\n",linenum);}
+"I" {printf("%d_tINTEGRATION\n",linenum);}
+[a-z] {printf("%d_tIDENTIFIER_(%s)\n",linenum, yytext);}
+[1-9][0-9]* {printf("%d_tINTEGER_(%s)\n",linenum,yytext);}
+[ \t\r] ;
+. {printf("%d_ILLEGAL_CHARACTER_(%s)\n",linenum,yytext);}
+
+
+
+
+
+
+
+
+%%
+int main(){
+    yylex();
+    return(0);
+}
